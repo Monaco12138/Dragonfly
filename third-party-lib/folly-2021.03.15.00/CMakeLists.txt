@@ -386,6 +386,7 @@ apply_folly_compile_options_to_target(folly)
 target_compile_features(folly INTERFACE cxx_generic_lambdas)
 
 target_link_libraries(folly PUBLIC folly_deps)
+#target_link_libraries(folly fmt)
 
 # Test utilities exported for use by downstream projects
 add_library(folly_test_util

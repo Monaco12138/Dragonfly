@@ -16,6 +16,7 @@
 
 #pragma once
 
+#define FMT_HEADER_ONLY
 #include <fmt/format.h>
 #include <folly/Range.h>
 #include <folly/logging/xlog.h>

@@ -1,1 +1,4 @@
 .DS_Store
+system/build/*
+third-party-lib/fmt/*
+third-party-lib/folly-2021.03.15.00/_build/*

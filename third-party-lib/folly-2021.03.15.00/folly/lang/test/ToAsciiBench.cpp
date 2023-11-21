@@ -20,6 +20,7 @@
 
 #include <cinttypes>
 
+#define FMT_HEADER_ONLY
 #include <fmt/format.h>
 
 #include <folly/Benchmark.h>

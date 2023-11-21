@@ -41,6 +41,7 @@
 #include <string_view> // @manual
 #endif
 
+#define FMT_HEADER_ONLY
 #include <fmt/format.h>
 
 #include <folly/CpuId.h>

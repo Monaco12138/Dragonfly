@@ -16,6 +16,7 @@
 
 #include <folly/logging/Logger.h>
 
+#define FMT_HEADER_ONLY
 #include <fmt/format.h>
 #include <folly/logging/LogCategory.h>
 #include <folly/logging/LogHandler.h>
