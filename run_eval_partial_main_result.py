@@ -15,10 +15,10 @@ encoding ="utf8"
 
 
 def kill_procs():
-	os.system("sudo killall -9 server"+" > /dev/null 2>&1")
-	os.system("sudo killall -9 client"+" > /dev/null 2>&1")
-	os.system("sudo killall -9 mm-link"+" > /dev/null 2>&1")
-	os.system("sudo killall -9 mm-delay"+" > /dev/null 2>&1")
+	os.system("   killall -9 server"+" > /dev/null 2>&1")
+	os.system("   killall -9 client"+" > /dev/null 2>&1")
+	os.system("   killall -9 mm-link"+" > /dev/null 2>&1")
+	os.system("   killall -9 mm-delay"+" > /dev/null 2>&1")
 	time.sleep(2)
 
 
@@ -34,12 +34,12 @@ def run_server_and_get_ip(tracefile, videoPath, args):
 	pid1 = subprocess.Popen(shlex.split(interfaces_cmd), stdout=subprocess.PIPE, shell=False)
 	interfaces_before_mahimahi, err1 = pid1.communicate()
 
-	#mahimahi_preq_cmd = "sudo sysctl -w net.ipv4.ip_forward=1"
+	#mahimahi_preq_cmd = "   sysctl -w net.ipv4.ip_forward=1"
 	#pid2 = subprocess.Popen(shlex.split(mahimahi_preq_cmd), stdout=subprocess.PIPE, shell=False)
 	#out2, err2 = pid2.communicate()
 
 	#This will create mahimahi with http-server @ port 7717 inside mahimahi shell"
-	mahimahi_cmd = "mm-link "+tracefile+" "+tracefile+" sudo ./system/build/server " + videoPath + args 
+	mahimahi_cmd = "mm-link "+tracefile+" "+tracefile+"    ./system/build/server " + videoPath + args 
 	pid3 = subprocess.Popen([mahimahi_cmd],shell=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
 	#wait for a second to update the interfaces (adding mahimahi interface)
@@ -56,21 +56,39 @@ def run_server_and_get_ip(tracefile, videoPath, args):
 			mahimahi_interface=interface
 			break
 
-	ip_cmd="ip address show "+mahimahi_interface.decode(encoding)
+	ip_cmd="ip address show "
+	try:
+		ip_cmd+=mahimahi_interface.decode(encoding)
+	except:
+		ip_cmd+=mahimahi_interface
+	#print("#####")
+	#print( ip_cmd )
+	# ip_cmd: link-3833782
+	#print("#####")
 	pid5 = subprocess.Popen(shlex.split(ip_cmd), stdout=subprocess.PIPE, shell=False)
 	ipout, err5 = pid5.communicate()
 	ip=""
 	for x in ipout.split(b'\n'):
 		if b'peer' in x:
 			ip=x.split()[3].split(b'/')[0]
-	return str(ip.decode())
+
+	try:
+		return str(ip.decode())
+	except:
+		return str(ip)
 
 
 def main():
 	
-	user_trace_dir = "/home/dfly/traces_system/"
-	video_dir = "/home/dfly/Videos/"
-	bw_trace_dir ="/home/dfly/mmlink_traces_raw_to_use/"
+	IO_show = False
+	if IO_show:
+		IO_str = ' '
+	else:
+		IO_str = ' > /dev/null 2>&1'
+
+	user_trace_dir = "/home/netlab/main/Dragonfly/traces_system/"
+	video_dir = "/home/netlab/main/Dragonfly/Videos/"
+	bw_trace_dir ="/home/netlab/main/Dragonfly/mmlink_traces_raw_to_use/"
 	tile_size ="sizes.txt"
 	quality_name = "psnr_avgs.txt"
 
@@ -99,13 +117,12 @@ def main():
 		"v28_data":[2,3,14]
 		}
 
-	iteration_num = 108
+	iteration_num = 0
 	iteration_id = 0
 	total_num_of_exp = len(videos) * len(bw_traces) * len(users["v1_data"] * len(models))
-	os.system("sudo mkdir main-partial-results > /dev/null 2>&1")
-	# > /dev/null 2>&1 表示终端不输出任何信息，不输出任何错误判断
+	os.system("   mkdir main-partial-results " + IO_str)
 	for video in videos:
-		os.system("sudo mkdir main-partial-results/"+video+" > /dev/null 2>&1")
+		os.system("   mkdir main-partial-results/"+video+ IO_str)
 		videoId = int(video.split("_")[0].replace("v",""))
 		videoPath = video_dir + video
 		videoPsnr = videoPath+"/" + quality_name
@@ -128,17 +145,17 @@ def main():
 
 					kill_procs()
 					out_dir = "main-partial-results/"+video+"/"+str(userId)+"_"+model+"_"+str(bw_trace)
-					os.system("sudo rm -r "+out_dir+" > /dev/null 2>&1")
-					os.system("sudo mkdir "+out_dir+" > /dev/null 2>&1")
+					os.system("   rm -r "+out_dir+ IO_str)
+					os.system("   mkdir "+out_dir+ IO_str)
 					server_ip = run_server_and_get_ip(bw_trace_path,videoPath,args_server[model])
 					time.sleep(1)
 
-					client_cmd = "sudo ./system/build/client "+user_frame_tiles_path+" "+user_frame_vp_path+" "+videoSizes+" "+videoPsnr+" "
+					client_cmd = "   ./system/build/client "+user_frame_tiles_path+" "+user_frame_vp_path+" "+videoSizes+" "+videoPsnr+" "
 					client_cmd += displacementTrainingPath+" "+server_ip+" "
 
 
 					if "pano" in model:
-						client_cmd += " /home/dfly/Videos/Pano_tiles_grouping/v"+str(videoId)+"_grouping.txt" +" /home/dfly/Videos/videos_bitrates/v"+str(videoId)+"_bitrates.txt "
+						client_cmd += " /home/netlab/main/Dragonfly/Videos/Pano_tiles_grouping/v"+str(videoId)+"_grouping.txt" +" /home/netlab/main/Dragonfly/Videos/Pano_tiles_grouping/v"+str(videoId)+"_bitrates.txt "
 					elif "journal" in model:
 						client_cmd += baseLayerSize
 					elif "utility_360_background" in model:
@@ -151,16 +168,16 @@ def main():
 						out,err = pid.communicate()
 					except :
 						print("TIME out")
-					os.system("sudo mv client* "+out_dir+" > /dev/null 2>&1")
-					os.system("sudo mv play* "+out_dir+" > /dev/null 2>&1")
-					os.system("sudo mv pred* "+out_dir+" > /dev/null 2>&1")
-					os.system("sudo mv recv* "+out_dir+" > /dev/null 2>&1")
-					os.system("sudo mv server* "+out_dir+" > /dev/null 2>&1")
-					os.system("sudo rm -r yuv* "+" > /dev/null 2>&1")
-					os.system("sudo rm /home/dfly/core* > /dev/null 2>&1")
+					os.system("   mv client* "+out_dir+ IO_str)
+					os.system("   mv play* "+out_dir + IO_str)
+					os.system("   mv pred* "+out_dir + IO_str)
+					os.system("   mv recv* "+out_dir + IO_str)
+					os.system("   mv server* "+out_dir+IO_str)
+					os.system("   rm -r yuv* "+ IO_str)
+					os.system("   rm /home/netlab/main/Dragonfly/core* " + IO_str )
 					kill_procs()
 					time.sleep(5)
-					os.system("sudo sed \"s/iteration_num = "+str(iteration_num)+"/iteration_num = "+str(iteration_num+1)+"/g\" -i run_eval_partial_main_results.py"+" > /dev/null 2>&1")
+					#os.system("   sed \"s/iteration_num = "+str(iteration_num)+"/iteration_num = "+str(iteration_num+1)+"/g\" -i run_eval_partial_main_results.py"+" > /dev/null 2>&1")
 					iteration_num += 1
 	print("\n          \x1b[1;102;91m    vvvv    \x1b[0m\n          \x1b[1;102;91m>>>>\x1b[0m\x1b[1;102;34mDONE\x1b[0m\x1b[1;102;91m<<<<\x1b[0m\n          \x1b[1;102;91m    ^^^^    \x1b[0m")
 
