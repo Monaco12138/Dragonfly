@@ -37,6 +37,7 @@ ClientNetworkLayer.o: ./src/ClientNetworkLayer.cpp ./src/ClientNetworkLayer.h
 LinearRegression.o: ./src/LinearRegression.cpp ./src/LinearRegression.h
 	g++ -std=c++14 -D__GXX_EXPERIMENTAL_CXX0X__ -O0 -g -Wall -c -fmessage-length=0 ./src/LinearRegression.cpp -o ./build/LinearRegression.o
 
+.PHONY: clean
 clean:
 	rm ./build/*.o
 	rm ./build/client

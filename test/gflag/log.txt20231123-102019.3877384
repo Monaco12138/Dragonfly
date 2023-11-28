@@ -1,0 +1,5 @@
+Log file created at: 2023/11/23 10:20:19
+Running on machine: netlab2
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I1123 10:20:19.911604 3877384 test.cpp:15] test log info
+W1123 10:20:19.911872 3877384 test.cpp:16] test log warning

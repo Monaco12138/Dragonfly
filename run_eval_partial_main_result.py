@@ -40,6 +40,13 @@ def run_server_and_get_ip(tracefile, videoPath, args):
 
 	#This will create mahimahi with http-server @ port 7717 inside mahimahi shell"
 	mahimahi_cmd = "mm-link "+tracefile+" "+tracefile+"    ./system/build/server " + videoPath + args 
+
+	print("#####")
+	print( mahimahi_cmd )
+	#mm-link /home/netlab/main/Dragonfly/mmlink_traces_raw_to_use/report_bus_0003_subtrace1.txt /home/netlab/main/Dragonfly/mmlink_traces_raw_to_use/report_bus_0003_subtrace1.txt    ./system/build/server /home/netlab/main/Dragonfly/Videos/v1_data 0 
+
+	print("#####")
+
 	pid3 = subprocess.Popen([mahimahi_cmd],shell=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
 	#wait for a second to update the interfaces (adding mahimahi interface)
@@ -80,7 +87,7 @@ def run_server_and_get_ip(tracefile, videoPath, args):
 
 def main():
 	
-	IO_show = False
+	IO_show = True
 	if IO_show:
 		IO_str = ' '
 	else:
@@ -162,6 +169,10 @@ def main():
 						client_cmd += baseLayerSize +" "+vidoePsnrChunk
 
 					client_cmd += args_client[model] 
+					print("######")
+					print( client_cmd )
+					print("######")
+
 					pid = subprocess.Popen(client_cmd,shell=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 					try:	
 						signal.alarm(15*60)

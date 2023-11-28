@@ -33,8 +33,7 @@ Client::Client(std::string tilesPerFrameTracePath,
   // 2- Video player along with the decoder.
   // 3- ABR algorithm along with tile and bandwidth predictors.
   ClientNetworkLayer *clientNetworkLayer = new ClientNetworkLayer(serverIp);
-  VideoPlayer *videoPlayer =
-      new VideoPlayer(tilesPerFrameTracePath, vpCorrPerFrameTracePath);
+  VideoPlayer *videoPlayer = new VideoPlayer(tilesPerFrameTracePath, vpCorrPerFrameTracePath);
   Decoder *decoderEL = new Decoder(320, 160);
   Decoder *decoderBG = new Decoder(3840, 1920);
   AbrAlgorithm *abr =
@@ -136,6 +135,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  //设置日志LOG的函数
   google::SetLogDestination(google::INFO, "client_log.txt");
   google::InitGoogleLogging(argv[0]);
   gflags::ParseCommandLineFlags(&argc, &argv, true);

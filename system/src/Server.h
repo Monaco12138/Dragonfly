@@ -30,6 +30,7 @@ class Server {
 
   // this is a hashset for tiles already sent,
   // used to avoid sending duplicate tiles.
+  // <chunkId, tileId>, qualityId
   std::map<std::pair<int, uint16_t>, uint8_t> tilesSent_;
 
   uint8_t initializeSocket();
@@ -68,3 +69,10 @@ class Server {
 };
 
 #endif /* SERVER_H_ */
+
+
+/*
+mm-link /home/netlab/main/Dragonfly/mmlink_traces_raw_to_use/report_bus_0003_subtrace1.txt /home/netlab/main/Dragonfly/mmlink_traces_raw_to_use/report_bus_0003_subtrace1.txt    
+./system/build/server /home/netlab/main/Dragonfly/Videos/v1_data 0 
+
+*/

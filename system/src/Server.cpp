@@ -32,7 +32,7 @@
 DEFINE_bool(utilityAbr, true, "true : utility, false : flare");
 
 Server::Server(std::string videoPathDir) {
-  videoRootDir_ = videoPathDir;
+  this->videoRootDir_ = videoPathDir;
 
   /// Users/eghabash/Desktop/System-github/Project-V360/
 
@@ -44,6 +44,7 @@ Server::Server(std::string videoPathDir) {
   senderThread.join();
 }
 
+// 初始化套接字，绑定 0.0.0.0:7717
 uint8_t Server::initializeSocket() {
   uint8_t socketFileDescriptor;
   struct sockaddr_in address;
@@ -55,22 +56,38 @@ uint8_t Server::initializeSocket() {
     exit(EXIT_FAILURE);
   }
 
+  /*
+  设置端口复用，防止服务器重启时之前绑定的端口还未释放或者程序中途退出而系统没有释放端口
+  设置了端口复用新启动的服务就可以直接绑定端口，否则绑定会失败
+  */
   if (setsockopt(socketFileDescriptor, SOL_SOCKET, SO_REUSEADDR, &opt,
                  sizeof(opt))) {
     perror("setsockopt - Reuse-Address");
     exit(EXIT_FAILURE);
   }
-
   if (setsockopt(socketFileDescriptor, SOL_SOCKET, SO_REUSEPORT, &opt,
                  sizeof(opt))) {
     perror("setsockopt - Reuse-Port");
     exit(EXIT_FAILURE);
   }
 
+  /*
+  // ipv4
+  struct sockaddr_in {
+      sa_family_t    sin_family;  //address family: AF_INET 
+      in_port_t      sin_port;   // port in network byte order 
+      struct in_addr sin_addr;   // internet address 
+  };
+  Internet address. 
+  struct in_addr {
+      uint32_t       s_addr;    // address in network byte order 
+  };
+  */
   address.sin_family = AF_INET;
-  address.sin_addr.s_addr = INADDR_ANY;
+  address.sin_addr.s_addr = INADDR_ANY; //0.0.0.0
   address.sin_port = htons(PORT);
 
+  //int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
   if (bind(socketFileDescriptor, (struct sockaddr *)&address, sizeof(address)) <
       0) {
     perror("bind failed");
@@ -80,8 +97,12 @@ uint8_t Server::initializeSocket() {
   return socketFileDescriptor;
 }
 
+
+// listen
 uint8_t Server::listenToSocket(uint8_t socketFileDescriptor) {
   LOG(INFO) << "Listening @ PORT:" << PORT;
+
+  // 此 address 是客户端的地址
   struct sockaddr_in address;
   int addrlen = sizeof(address);
   uint8_t newSocket;
@@ -99,6 +120,10 @@ uint8_t Server::listenToSocket(uint8_t socketFileDescriptor) {
   return newSocket;
 }
 
+
+
+// client 一次性请求很多chunk_tile 0_45_1,0_57_1,0_69_1... 服务器接收到这些请求，逐一发送
+// 知道发送完，client才会发出下一个请求
 void Server::reciever(Server *server, uint8_t socket) {
   // whether last request was received fully or not.
   bool leftover = false;
@@ -114,7 +139,7 @@ void Server::reciever(Server *server, uint8_t socket) {
   char *data = (char *)malloc(sizeof(char) * REQUEST_MAX_LENGTH);
 
   while (true) {
-    bzero(data, REQUEST_MAX_LENGTH);
+    bzero(data, REQUEST_MAX_LENGTH);  // memset( data, REQUEST_MAX_LENGTH );
     read(socket, data, REQUEST_MAX_LENGTH);
 
     /**
@@ -152,56 +177,56 @@ void Server::reciever(Server *server, uint8_t socket) {
       }
     }
     // TODO check http version
-    //	   check that it is a get
+    // 	   check that it is a get
 
     // add -lboost_regex
-    //		std::vector<std::string> requestRows;
-    //		boost::algorithm::split_regex(requestRows, request,
+    // 		std::vector<std::string> requestRows;
+    // 		boost::algorithm::split_regex(requestRows, request,
     // boost::regex("\r\n"));
-    //
-    //		//TODO parse request.
-    //
-    //		//Get request URL
-    //		int httpIdx = requestRows[0].find("HTTP");
-    //		std::string url = requestRows[0].substr(4,httpIdx-5);
-    //		//ToDo clear warning
-    //		const char * filePath = (this->videoRootDir+url).c_str();
-    //
-    //		FILE *p_file = NULL;
-    //		p_file = fopen(filePath,"rb");
-    //
-    //		if (!p_file)
-    //		{
-    //			//ToDo check error code.
-    //			//send to user 404 or other error status.
-    //		}
-    //		else
-    //		{
-    //			//To get the file size skip to its EOF.
-    //			//ToDo check time performance.
-    //			fseek(p_file,0,SEEK_END);
-    //			int size = ftell(p_file);
-    //			fseek(p_file,0,SEEK_SET);
-    //			// Enough memory for the file
-    //			uint8_t * buffer = (uint8_t *) malloc(size *
+    
+    // 		//TODO parse request.
+    
+    // 		//Get request URL
+    // 		int httpIdx = requestRows[0].find("HTTP");
+    // 		std::string url = requestRows[0].substr(4,httpIdx-5);
+    // 		//ToDo clear warning
+    // 		const char * filePath = (this->videoRootDir+url).c_str();
+    
+    // 		FILE *p_file = NULL;
+    // 		p_file = fopen(filePath,"rb");
+    
+    // 		if (!p_file)
+    // 		{
+    // 			//ToDo check error code.
+    // 			//send to user 404 or other error status.
+    // 		}
+    // 		else
+    // 		{
+    // 			//To get the file size skip to its EOF.
+    // 			//ToDo check time performance.
+    // 			fseek(p_file,0,SEEK_END);
+    // 			int size = ftell(p_file);
+    // 			fseek(p_file,0,SEEK_SET);
+    // 			// Enough memory for the file
+    // 			uint8_t * buffer = (uint8_t *) malloc(size *
     // sizeof(uint8_t));
-    //			// Read in the entire file.
-    //			fread(buffer, size, 1, p_file);
-    //			// Close the file
-    //			fclose(p_file);
-    //
-    //			//ToDo Make sure they don't get out of order.
-    //			//send HTTP header.
-    //			std::string header(this->getResponseHeader("1.1","200
+    // 			// Read in the entire file.
+    // 			fread(buffer, size, 1, p_file);
+    // 			// Close the file
+    // 			fclose(p_file);
+    
+    // 			//ToDo Make sure they don't get out of order.
+    // 			//send HTTP header.
+    // 			std::string header(this->getResponseHeader("1.1","200
     // OK","Bytes",size,"video/m4s",url));
-    //			send(newSocket,header.c_str(),header.size(),0);
-    //
-    //			//send HTTP file.
-    //			send(newSocket,buffer,size,0);
-    //			free(buffer);
-    //
-    //
-    //		}
+    // 			send(newSocket,header.c_str(),header.size(),0);
+    
+    // 			//send HTTP file.
+    // 			send(newSocket,buffer,size,0);
+    // 			free(buffer);
+    
+    
+    // 		}
     // GET 6/1.h264 HTTP/1.1\r\n",req+"?quality=720p&chunk_scheme=3
   }
 }
@@ -291,6 +316,7 @@ void Server::sender(Server *server, uint8_t socket) {
     }
     delete[] filePath;
 
+    // 这一步在计算文件大小，以字节为单位
     fseek(p_file, 0, SEEK_END);
     fileSize = ftell(p_file);
     fseek(p_file, 0, SEEK_SET);
@@ -314,7 +340,17 @@ void Server::sender(Server *server, uint8_t socket) {
         "1.1", "200 OK", "Bytes", fileSize, "video/m4s",
         std::to_string(chunkId) + "_" + tileInfo[1], tileInfo[2]));
     VLOG(1) << "\n" << header << "-------";
+    /* --header--
+    HTTP1.1 200 OK
+    Tile-Index: 1_21
+    Tile-Quality:0
+    Date: Tue Nov 28 02:52:48 2023
+    Accept-Ranges: Bytes
+    Content-Length: 1440
+    Content-Type: video/m4s
+    */
 
+    // 查看发送缓存的大小， send(socket,...)只是将报文写入了发送缓存中，并不清楚接收方何时接收
     ioctl(socket, SIOCOUTQ, &pendingData);
     LOG(INFO) << "Pending data in Buffer-before:" << pendingData << " Bytes";
     LOG(INFO) << "Server_sending[" << chunkId << "-" << tileInfo[2]
@@ -418,6 +454,7 @@ bool Server::isTileSent(std::pair<int, uint16_t> tile, uint8_t quality) {
 std::vector<std::string> Server::getTileList() {
   std::vector<std::string> requestToReturn;
   reqMutex_.lock();
+  // = 是深拷贝
   requestToReturn = request_;
   request_ = {};
   reqMutex_.unlock();
@@ -435,9 +472,12 @@ void start(std::string videoPathDir) {
 }
 
 int main(int argc, char **argv) {
+
+  // 设置日志和参数初始化
   google::SetLogDestination(google::INFO, "server_log.txt");
   google::InitGoogleLogging(argv[0]);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
+
   if (std::stoi(argv[2]) == 0) {
     FLAGS_utilityAbr = false;
   }
