@@ -10,6 +10,9 @@
 #include "Util.h"
 #include "glog/logging.h"
 
+/* opaque 指向用户数据， buffer是缓冲区
+   我们将用户数据写入缓冲区中交给ffmpeg处理
+*/
 int read_packet(void *opaque, uint8_t *buffer, int bufferSize) {
   struct BufferReader *br = (struct BufferReader *)opaque;
   bufferSize = FFMIN(bufferSize, br->size);
@@ -21,6 +24,7 @@ int read_packet(void *opaque, uint8_t *buffer, int bufferSize) {
   return bufferSize;
 }
 
+// 初始化 av_codecc
 void Decoder::initAVCodec(int width, int height) {
   avCodec = avcodec_find_decoder(AV_CODEC_ID_H264);
   avCodecContext = avcodec_alloc_context3(avCodec);
